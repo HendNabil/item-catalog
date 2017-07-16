@@ -37,6 +37,7 @@ def showLogin():
     return render_template('login.html', STATE=state)
 
 
+# Log in to and open an active session
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
     # Validate state token
@@ -126,7 +127,7 @@ def gconnect():
     print("done!")
     return output
 
-
+# Disconnect from the current active session
 @app.route('/gdisconnect')
 def gdisconnect():
     access_token = login_session['access_token']
@@ -159,7 +160,7 @@ def gdisconnect():
         return response
 
 
-# JSON APIs to view Restaurant Information
+# JSON APIs to view Restaurant Menu Information
 @app.route('/restaurant/<int:restaurant_id>/menu/JSON')
 def restaurantMenuJSON(restaurant_id):
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
@@ -167,12 +168,14 @@ def restaurantMenuJSON(restaurant_id):
     return jsonify(MenuItems=[i.serialize for i in items])
 
 
+# JSON APIs to view Menu Information
 @app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/JSON')
 def menuItemJSON(restaurant_id, menu_id):
     Menu_Item = session.query(MenuItem).filter_by(id=menu_id).one()
     return jsonify(Menu_Item=Menu_Item.serialize)
 
 
+# JSON APIs to view Restaurant Information
 @app.route('/restaurant/JSON')
 def restaurantsJSON():
     restaurants = session.query(Restaurant).all()
@@ -312,6 +315,7 @@ def deleteMenuItem(restaurant_id, menu_id):
         return render_template('deleteMenuItem.html', item=itemToDelete)
 
 
+# Create a new user
 def createUser(login_session):
     newUser = User(name=login_session['username'], email=login_session[
                    'email'], picture=login_session['picture'])
