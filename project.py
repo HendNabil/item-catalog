@@ -220,7 +220,9 @@ def editRestaurant(restaurant_id):
         if restaurant.user_id == creator.id:
             if request.form['name']:
                 editedRestaurant.name = request.form['name']
+                session.add(editedRestaurant)
                 flash('Restaurant Successfully Edited %s' % editedRestaurant.name)
+                session.commit()
                 return redirect(url_for('showRestaurants'))
     else:
         return render_template('editRestaurant.html', restaurant=editedRestaurant)
