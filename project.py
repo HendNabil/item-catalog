@@ -40,16 +40,22 @@ def showLogin():
 # Log in to and open an active session
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
-    # Validate state token
+    """
+    Validate state token
+    """
     if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameter.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
-    # Obtain authorization code
+    """
+    Obtain authorization code
+    """
     code = request.data
 
     try:
-        # Upgrade the authorization code into a credentials object
+        """
+        Upgrade the authorization code into a credentials object
+        """
         oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
         oauth_flow.redirect_uri = 'postmessage'
         credentials = oauth_flow.step2_exchange(code)
@@ -59,19 +65,25 @@ def gconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
-    # Check that the access token is valid.
+    """
+    Check that the access token is valid.
+    """
     access_token = credentials.access_token
     url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s'
            % access_token)
     h = httplib2.Http()
     result = json.loads(h.request(url, 'GET')[1])
-    # If there was an error in the access token info, abort.
+    """
+    If there was an error in the access token info, abort.
+    """
     if result.get('error') is not None:
         response = make_response(json.dumps(result.get('error')), 500)
         response.headers['Content-Type'] = 'application/json'
         return response
 
-    # Verify that the access token is used for the intended user.
+    """
+    Verify that the access token is used for the intended user.
+    """
     gplus_id = credentials.id_token['sub']
     if result['user_id'] != gplus_id:
         response = make_response(
@@ -79,7 +91,9 @@ def gconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
-    # Verify that the access token is valid for this app.
+    """
+    Verify that the access token is valid for this app.
+    """
     if result['issued_to'] != CLIENT_ID:
         response = make_response(
             json.dumps("Token's client ID does not match app's."), 401)
@@ -95,11 +109,15 @@ def gconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
-    # Store the access token in the session for later use.
+    """
+    Store the access token in the session for later use.
+    """
     login_session['access_token'] = credentials.access_token
     login_session['gplus_id'] = gplus_id
 
-    # Get user info
+    """
+    Get user info
+    """
     userinfo_url = "https://www.googleapis.com/oauth2/v1/userinfo"
     params = {'access_token': credentials.access_token, 'alt': 'json'}
     answer = requests.get(userinfo_url, params=params)
